@@ -30,6 +30,8 @@
 
 10. User could get error when deploy a war file to none linux java tomcat web app
 
+// Following tests will not be ready until we finish the code work of java se support
+
 11. User could create a linux java se web app
 
 12. User could deploy a jar file to linux java se web app
