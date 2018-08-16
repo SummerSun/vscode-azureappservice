@@ -11,7 +11,7 @@ import * as path from 'path';
 import { join } from 'path';
 import * as vscode from 'vscode';
 import * as appservice from 'vscode-azureappservice';
-import { DialogResponses, IActionContext, IAzureNode, IAzureQuickPickItem, IAzureTreeItem, parseError, TelemetryProperties, UserCancelledError } from 'vscode-azureextensionui';
+import { DialogResponses, IActionContext, IAzureNode, IAzureTreeItem, parseError } from 'vscode-azureextensionui';
 import * as constants from '../constants';
 import { SiteTreeItem } from '../explorer/SiteTreeItem';
 import { WebAppTreeItem } from '../explorer/WebAppTreeItem';
@@ -100,10 +100,9 @@ export async function deploy(context: IActionContext, confirmDeployment: boolean
     const siteConfig: WebSiteModels.SiteConfigResource = await node.treeItem.client.getSiteConfig();
 
     if (!fsPath) {
-        if (isJavaTomcatRuntime(siteConfig.linuxFxVersion)) {
-            fsPath = await showQuickPickByFileExtension('Select the war file to deploy...', 'war', context.properties);
-        } else if (isJavaSERuntime(siteConfig.linuxFxVersion)) {
-            fsPath = await showQuickPickByFileExtension('Select the jar file to deploy...', 'jar', context.properties);
+        const targetFileExtension: string | undefined = util.tryGetJavaRuntimeTargetFileExtension(siteConfig.linuxFxVersion);
+        if (targetFileExtension) {
+            fsPath = await util.showQuickPickByFileExtension(`Select the ${targetFileExtension} file to deploy...`, targetFileExtension, context.properties);
         } else {
             fsPath = await util.showWorkspaceFoldersQuickPick("Select the folder to deploy", context.properties, constants.configurationSettings.deploySubpath);
         }
@@ -144,56 +143,7 @@ export async function deploy(context: IActionContext, confirmDeployment: boolean
         });
 }
 
-function isJavaTomcatRuntime(runtime: string | undefined): boolean {
-    return runtime !== undefined && runtime.toLowerCase().startsWith(constants.runtimes.tomcat);
-}
-
-function isJavaSERuntime(runtime: string | undefined): boolean {
-    return runtime !== undefined && runtime.toLowerCase().startsWith(constants.runtimes.javase);
-}
-
 function getRandomHexString(length: number): string {
     const buffer: Buffer = randomBytes(Math.ceil(length / 2));
     return buffer.toString('hex').slice(0, length);
-}
-
-async function showQuickPickByFileExtension(placeHolderString: string, fileExtension: string, telemetryProperties: TelemetryProperties): Promise<string> {
-    if (!fileExtension || fileExtension.length === 0) {
-        throw new Error('The file extension is missing or invalid for filtering quick pick items.');
-    }
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.${fileExtension}`);
-    const quickPickItems: IAzureQuickPickItem<string | undefined>[] = files.map((uri: vscode.Uri) => {
-        return {
-            label: path.basename(uri.fsPath),
-            description: uri.fsPath,
-            data: uri.fsPath
-        };
-    });
-
-    quickPickItems.push({ label: '$(package) Browse...', description: '', data: undefined });
-
-    const quickPickOption = { placeHolder: placeHolderString };
-    const pickedItem = await vscode.window.showQuickPick(quickPickItems, quickPickOption);
-
-    if (!pickedItem) {
-        telemetryProperties.cancelStep = `show${fileExtension}`;
-        throw new UserCancelledError();
-    } else if (!pickedItem.data) {
-        const browseResult = await vscode.window.showOpenDialog({
-            canSelectFiles: true,
-            canSelectFolders: false,
-            canSelectMany: false,
-            defaultUri: vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined,
-            filters: { Artifacts: [fileExtension] }
-        });
-
-        if (!browseResult) {
-            telemetryProperties.cancelStep = `show${fileExtension}Browse`;
-            throw new UserCancelledError();
-        }
-
-        return browseResult[0].fsPath;
-    } else {
-        return pickedItem.data;
-    }
 }

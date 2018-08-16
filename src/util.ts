@@ -6,7 +6,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IAzureQuickPickItem, TelemetryProperties, UserCancelledError } from 'vscode-azureextensionui';
-import { extensionPrefix } from './constants';
+import { extensionPrefix, runtimes } from './constants';
 import { ext } from './extensionVariables';
 
 // Resource ID
@@ -74,6 +74,60 @@ export async function showWorkspaceFoldersQuickPick(placeHolderString: string, t
 
         if (!browseResult) {
             telemetryProperties.cancelStep = 'showWorkspaceFoldersBrowse';
+            throw new UserCancelledError();
+        }
+
+        return browseResult[0].fsPath;
+    } else {
+        return pickedItem.data;
+    }
+}
+
+export function tryGetJavaRuntimeTargetFileExtension(runtime: string | undefined): string | undefined {
+    if (runtime) {
+        const lowerCaseRuntime: string = runtime.toLowerCase();
+        if (lowerCaseRuntime.startsWith(runtimes.tomcat)) {
+            return 'war';
+        }
+        if (lowerCaseRuntime.startsWith(runtimes.javase)) {
+            return 'jar';
+        }
+    }
+    return undefined;
+}
+
+export async function showQuickPickByFileExtension(placeHolderString: string, fileExtension: string, telemetryProperties: TelemetryProperties): Promise<string> {
+    if (!fileExtension) {
+        fileExtension = '*';
+    }
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.${fileExtension}`);
+    const quickPickItems: IAzureQuickPickItem<string | undefined>[] = files.map((uri: vscode.Uri) => {
+        return {
+            label: path.basename(uri.fsPath),
+            description: uri.fsPath,
+            data: uri.fsPath
+        };
+    });
+
+    quickPickItems.push({ label: '$(package) Browse...', description: '', data: undefined });
+
+    const quickPickOption = { placeHolder: placeHolderString };
+    const pickedItem = await vscode.window.showQuickPick(quickPickItems, quickPickOption);
+
+    if (!pickedItem) {
+        telemetryProperties.cancelStep = `show${fileExtension}`;
+        throw new UserCancelledError();
+    } else if (!pickedItem.data) {
+        const browseResult = await vscode.window.showOpenDialog({
+            canSelectFiles: true,
+            canSelectFolders: false,
+            canSelectMany: false,
+            defaultUri: vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri : undefined,
+            filters: { Artifacts: [fileExtension] }
+        });
+
+        if (!browseResult) {
+            telemetryProperties.cancelStep = `show${fileExtension}Browse`;
             throw new UserCancelledError();
         }
 
