@@ -36,4 +36,3 @@
 
 12. User could be prompted all .jar files in current folder to select one to deploy to linux java se web app
 
-13. User could get error when deploy a file whose extension is neither jar nor zip to any linux java web app
