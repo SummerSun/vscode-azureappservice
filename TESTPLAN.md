@@ -30,10 +30,10 @@
 
 /* Following tests will not be ready until we finish the code work of java se support*/
 
-11. User could create a linux java se web app
+10. User could create a linux java se web app
 
-12. User could deploy a jar file to linux java se web app
+11. User could deploy a jar file to linux java se web app
 
-13. User could be prompted all .jar files in current folder to select one to deploy to linux java se web app
+12. User could be prompted all .jar files in current folder to select one to deploy to linux java se web app
 
-14. User could get error when deploy a file whose extension is neither jar nor zip to any linux java web app
+13. User could get error when deploy a file whose extension is neither jar nor zip to any linux java web app
