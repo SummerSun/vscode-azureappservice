@@ -12,14 +12,14 @@ export function isJavaRuntime(runtime: string | undefined): boolean {
     if (runtime) {
         const lowerCaseRuntime: string = runtime.toLowerCase();
         return lowerCaseRuntime.startsWith(runtimes.tomcat) ||
-            lowerCaseRuntime.startsWith(runtimes.javase);
+            lowerCaseRuntime === runtimes.javase;
     }
     return false;
 }
 
 export async function getJavaRuntimeTargetFile(runtime: string | undefined, telemetryProperties: TelemetryProperties): Promise<string> {
     let fileExtension: string;
-    if (runtime && runtime.toLowerCase().startsWith(runtimes.javase)) {
+    if (runtime && runtime.toLowerCase() === runtimes.javase) {
         fileExtension = 'jar';
     } else if (runtime && runtime.toLowerCase().startsWith(runtimes.tomcat)) {
         fileExtension = 'war';
