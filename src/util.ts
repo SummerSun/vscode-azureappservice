@@ -6,7 +6,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { IAzureQuickPickItem, TelemetryProperties, UserCancelledError } from 'vscode-azureextensionui';
-import { extensionPrefix, runtimes } from './constants';
+import { extensionPrefix } from './constants';
 import { ext } from './extensionVariables';
 
 // Resource ID
@@ -83,23 +83,7 @@ export async function showWorkspaceFoldersQuickPick(placeHolderString: string, t
     }
 }
 
-export function tryGetJavaRuntimeTargetFileExtension(runtime: string | undefined): string | undefined {
-    if (runtime) {
-        const lowerCaseRuntime: string = runtime.toLowerCase();
-        if (lowerCaseRuntime.startsWith(runtimes.tomcat)) {
-            return 'war';
-        }
-        if (lowerCaseRuntime.startsWith(runtimes.javase)) {
-            return 'jar';
-        }
-    }
-    return undefined;
-}
-
-export async function showQuickPickByFileExtension(placeHolderString: string, fileExtension: string, telemetryProperties: TelemetryProperties): Promise<string> {
-    if (!fileExtension) {
-        fileExtension = '*';
-    }
+export async function showQuickPickByFileExtension(telemetryProperties: TelemetryProperties, placeHolderString: string, fileExtension: string = '*'): Promise<string> {
     const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.${fileExtension}`);
     const quickPickItems: IAzureQuickPickItem<string | undefined>[] = files.map((uri: vscode.Uri) => {
         return {

@@ -17,6 +17,7 @@ import { SiteTreeItem } from '../explorer/SiteTreeItem';
 import { WebAppTreeItem } from '../explorer/WebAppTreeItem';
 import { ext } from '../extensionVariables';
 import * as util from '../util';
+import * as javaUtil from '../utils/javaUtils';
 import { isPathEqual, isSubpath } from '../utils/pathUtils';
 import { cancelWebsiteValidation, validateWebSite } from '../validateWebSite';
 
@@ -100,9 +101,8 @@ export async function deploy(context: IActionContext, confirmDeployment: boolean
     const siteConfig: WebSiteModels.SiteConfigResource = await node.treeItem.client.getSiteConfig();
 
     if (!fsPath) {
-        const targetFileExtension: string | undefined = util.tryGetJavaRuntimeTargetFileExtension(siteConfig.linuxFxVersion);
-        if (targetFileExtension) {
-            fsPath = await util.showQuickPickByFileExtension(`Select the ${targetFileExtension} file to deploy...`, targetFileExtension, context.properties);
+        if (javaUtil.isJavaRuntime(siteConfig.linuxFxVersion)) {
+            fsPath = await javaUtil.getJavaRuntimeTargetFile(siteConfig.linuxFxVersion, context.properties);
         } else {
             fsPath = await util.showWorkspaceFoldersQuickPick("Select the folder to deploy", context.properties, constants.configurationSettings.deploySubpath);
         }
