@@ -32,7 +32,9 @@
 
 10. User could create a linux java se web app
 
-11. User could deploy a jar file to linux java se web app
+11. Users could create a Linux Java SE web app
 
-12. User could be prompted all .jar files in current folder to select one to deploy to linux java se web app
+12. Java SE runtime will not show up if users select os 'Windows' during creating web app
+
+13. User could be prompted all .jar files in current folder to select one to deploy to linux java se web app
 
