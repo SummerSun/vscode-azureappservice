@@ -21,6 +21,9 @@
 - User could deploy a war file to a linux java tomcat 9.0 web app
 
 - User could deploy a jar file to a linux java se web app
+  - User will be prompted to enter a port to configure the application settings if there is not "PORT" configuration in app settings
+  - User will not be disturbed if there is already a "PORT" configuration in app settings
+  - User could press ESC from the port input dialog to cancel the deploy
 
 - User could right-click a .war file to deploy it to a linux java tomcat 8.5 web app
 
